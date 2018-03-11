@@ -1,8 +1,10 @@
 #define _GNU_SOURCE
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -10,13 +12,25 @@
 #define END 65535
 
 int set_addr(struct sockaddr_in *dstAddr, char **addr) {
-  if (addr[1] == '\0') {
+  struct hostent *host;
+  char *IPBuffer;
+
+  if (*(addr + 1) == '\0') {
     fprintf(stderr, "Error:Please specify the address as an argument\n");
     return 0;
   }
-
   dstAddr->sin_family = AF_INET;
-  dstAddr->sin_addr.s_addr = inet_addr(addr[1]);
+
+  if (isdigit(*(*(addr + 1)))) {
+    dstAddr->sin_addr.s_addr = inet_addr(*(addr + 1));
+  } else if ((host = gethostbyname(*(addr + 1))) != 0) {
+    IPBuffer = inet_ntoa(*((struct in_addr *)host->h_addr_list[0]));
+    printf("Host resolved to IP: %s\n", IPBuffer);
+    dstAddr->sin_addr.s_addr = inet_addr(IPBuffer);
+  } else {
+    herror(*(addr + 1));
+    return 0;
+  }
   return 1;
 }
 
