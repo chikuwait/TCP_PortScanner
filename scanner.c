@@ -34,7 +34,7 @@ int set_addr(struct sockaddr_in *dstAddr, char **addr) {
   return 1;
 }
 
-int server_connect(struct sockaddr_in *dstAddr, int port) {
+int connect_port(struct sockaddr_in *dstAddr, int port) {
   int dstSock = socket(AF_INET, SOCK_STREAM, 0);
   dstAddr->sin_port = htons(port);
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
   printf("Starting the portscan \n");
   for (int i = START; i <= END; i++) {
-    if (server_connect(&dstAddr, i))
+    if (connect_port(&dstAddr, i))
       printf("%d : Open\n", i);
   }
   return 0;
